@@ -1,0 +1,459 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>MEYDEN NATURAL CRM — Algorithme de valorisation</title>
+<meta name="description" content="CRM local autonome pour cartographier, valoriser et prioriser l'écosystème Meyden." />
+<style>
+:root{
+  --bg:#0b0d10; --panel:#141820; --panel2:#1b202a; --text:#f4f6f8; --muted:#9ba7b4;
+  --accent:#d7a84a; --accent2:#6fd0a6; --danger:#ff6b6b; --line:#2c3340; --chip:#242b37;
+  --shadow:0 20px 50px rgba(0,0,0,.35);
+}
+*{box-sizing:border-box}
+body{margin:0;font-family:Inter,ui-sans-serif,system-ui,-apple-system,Segoe UI,Roboto,Arial,sans-serif;background:linear-gradient(135deg,#090b0e,#10151d 55%,#0b0d10);color:var(--text)}
+button,input,select,textarea{font:inherit}
+button{cursor:pointer}
+.app{display:grid;grid-template-columns:270px 1fr;min-height:100vh}
+.sidebar{position:sticky;top:0;height:100vh;background:rgba(10,13,17,.96);border-right:1px solid var(--line);padding:22px 16px;overflow:auto}
+.brand{display:flex;gap:12px;align-items:center;margin-bottom:22px}
+.logo{width:48px;height:48px;border-radius:14px;background:radial-gradient(circle at 35% 35%,#f0cb79,#c58525 55%,#6f4316);display:grid;place-items:center;color:#111;font-weight:900;box-shadow:0 8px 24px rgba(215,168,74,.25)}
+.brand h1{font-size:17px;line-height:1.1;margin:0}.brand small{color:var(--muted)}
+.nav button{width:100%;text-align:left;border:0;background:transparent;color:var(--text);padding:12px 12px;border-radius:10px;margin:4px 0}
+.nav button:hover,.nav button.active{background:var(--panel2);color:#fff}
+.sidebox{margin-top:18px;padding:14px;border:1px solid var(--line);border-radius:14px;background:var(--panel)}
+.sidebox b{display:block;margin-bottom:6px}.sidebox small{color:var(--muted);line-height:1.4}
+.main{padding:26px;min-width:0}
+.topbar{display:flex;justify-content:space-between;gap:16px;align-items:center;margin-bottom:22px}
+.title h2{margin:0;font-size:28px}.title p{margin:6px 0 0;color:var(--muted)}
+.actions{display:flex;gap:8px;flex-wrap:wrap}
+.btn{border:1px solid var(--line);background:var(--panel2);color:var(--text);padding:10px 14px;border-radius:10px;font-weight:700}
+.btn:hover{filter:brightness(1.08)}
+.btn.primary{background:var(--accent);color:#111;border-color:transparent}
+.btn.success{background:var(--accent2);color:#08130f;border-color:transparent}
+.btn.danger{background:#2a171b;color:#ffb5b5;border-color:#5c2932}
+.grid{display:grid;grid-template-columns:repeat(12,1fr);gap:16px}
+.card{background:rgba(20,24,32,.94);border:1px solid var(--line);border-radius:16px;box-shadow:var(--shadow);padding:18px;min-width:0}
+.stat{grid-column:span 3}.stat .n{font-size:30px;font-weight:900;margin-top:8px}.stat small{color:var(--muted)}
+.span12{grid-column:span 12}.span8{grid-column:span 8}.span6{grid-column:span 6}.span4{grid-column:span 4}
+.toolbar{display:flex;gap:10px;align-items:center;flex-wrap:wrap;margin-bottom:12px}
+.input,.select,.textarea{width:100%;background:#0f1319;color:var(--text);border:1px solid var(--line);border-radius:10px;padding:11px 12px;outline:none}
+.input:focus,.select:focus,.textarea:focus{border-color:var(--accent)}
+.search{flex:1;min-width:220px}
+.tablewrap{overflow:auto;border:1px solid var(--line);border-radius:12px}
+table{width:100%;border-collapse:collapse;min-width:980px}
+th,td{padding:11px 12px;border-bottom:1px solid var(--line);text-align:left;vertical-align:top}
+th{position:sticky;top:0;background:#151a22;color:#c8d0da;font-size:12px;text-transform:uppercase;letter-spacing:.05em}
+tr:hover td{background:rgba(255,255,255,.02)}
+.badge{display:inline-flex;align-items:center;gap:6px;padding:5px 8px;border-radius:999px;background:var(--chip);border:1px solid var(--line);font-size:12px;white-space:nowrap}
+.p1{background:#4c3110;color:#ffd981}.p2{background:#263d2f;color:#aef2ca}.p3{background:#203546;color:#b7e1ff}.p4{background:#3a2b4b;color:#dfc2ff}.p5{background:#3e3430;color:#e7c9b7}.p6{background:#252a31;color:#cbd1d8}
+.scorebar{width:120px;height:8px;background:#222936;border-radius:99px;overflow:hidden;margin-top:5px}.scorebar i{display:block;height:100%;background:linear-gradient(90deg,var(--accent2),var(--accent));border-radius:99px}
+.kpi{display:flex;justify-content:space-between;gap:12px;align-items:center}.kpi strong{font-size:22px}
+.hidden{display:none!important}
+.formgrid{display:grid;grid-template-columns:repeat(2,1fr);gap:12px}.full{grid-column:1/-1}
+label{display:block;font-size:12px;color:#c6ced8;margin:0 0 6px;font-weight:700}
+.chips{display:flex;gap:6px;flex-wrap:wrap}.chip{padding:5px 8px;background:var(--chip);border:1px solid var(--line);border-radius:999px;font-size:12px}
+.profilehead{display:flex;justify-content:space-between;gap:16px;align-items:flex-start}
+.profilehead h3{font-size:26px;margin:0}.muted{color:var(--muted)}
+.axes{display:grid;grid-template-columns:repeat(2,1fr);gap:10px;margin-top:14px}.axis{padding:10px;border:1px solid var(--line);border-radius:10px;background:#10141a}.axis b{float:right}
+.timeline{border-left:2px solid var(--line);padding-left:16px}.event{margin:14px 0}.event small{color:var(--muted)}
+.importzone{border:2px dashed #3a4554;border-radius:16px;padding:18px;text-align:center;background:#0f1319}
+.notice{padding:12px 14px;border-left:4px solid var(--accent);background:#171b22;border-radius:8px;color:#dbe1e8}
+.sectiontitle{display:flex;justify-content:space-between;gap:10px;align-items:center;margin-bottom:12px}.sectiontitle h3{margin:0}
+pre{white-space:pre-wrap;word-break:break-word;background:#0e1217;border:1px solid var(--line);padding:12px;border-radius:10px;color:#d7dee7}
+@media(max-width:1000px){.app{grid-template-columns:1fr}.sidebar{position:relative;height:auto}.nav{display:flex;overflow:auto}.nav button{white-space:nowrap}.stat{grid-column:span 6}.span8,.span6,.span4{grid-column:span 12}}
+@media(max-width:650px){.main{padding:14px}.stat{grid-column:span 12}.formgrid,.axes{grid-template-columns:1fr}.topbar{align-items:flex-start;flex-direction:column}}
+@media print{body{background:#fff;color:#111}.sidebar,.topbar,.no-print{display:none!important}.main{padding:0}.card{box-shadow:none;border:0;background:#fff;color:#111}.muted{color:#555}.axis{background:#fff;border-color:#ddd}.badge,.chip{border-color:#bbb;background:#f5f5f5;color:#111}}
+</style>
+</head>
+<body>
+<div class="app">
+  <aside class="sidebar">
+    <div class="brand">
+      <div class="logo">M</div>
+      <div><h1>MEYDEN NATURAL CRM</h1><small>Structurer • Créer • Élever</small></div>
+    </div>
+    <div class="nav">
+      <button class="active" data-view="dashboard">▦ Tableau de bord</button>
+      <button data-view="library">☰ Bibliothèque</button>
+      <button data-view="import">⇧ Nouvelles données</button>
+      <button data-view="rules">⌘ Algorithme naturel</button>
+      <button data-view="backup">⤓ Sauvegarde</button>
+    </div>
+    <div class="sidebox">
+      <b>Principe</b>
+      <small>Aucun contact n'est supprimé. La valeur se révèle par les preuves, les interactions, les connexions et le temps.</small>
+    </div>
+    <div class="sidebox">
+      <b>Stockage local</b>
+      <small>Les données sont conservées dans ce navigateur via localStorage. Exportez régulièrement une sauvegarde JSON.</small>
+    </div>
+  </aside>
+
+  <main class="main">
+    <div class="topbar">
+      <div class="title"><h2 id="viewTitle">Tableau de bord</h2><p id="viewSubtitle">Cartographie vivante de l’écosystème Meyden.</p></div>
+      <div class="actions no-print">
+        <button class="btn" onclick="exportDatabase()">Exporter JSON</button>
+        <button class="btn primary" onclick="showView('import')">+ Ajouter des données</button>
+      </div>
+    </div>
+
+    <section id="view-dashboard">
+      <div class="grid">
+        <div class="card stat"><small>Contacts uniques</small><div class="n" id="statContacts">0</div></div>
+        <div class="card stat"><small>Professionnels des arts confirmés</small><div class="n" id="statArts">0</div></div>
+        <div class="card stat"><small>Fans / audience culturelle</small><div class="n" id="statFans">0</div></div>
+        <div class="card stat"><small>P1–P2 prioritaires</small><div class="n" id="statPriority">0</div></div>
+
+        <div class="card span8">
+          <div class="sectiontitle"><h3>Priorités de l’écosystème</h3><button class="btn" onclick="showView('library')">Voir toute la bibliothèque</button></div>
+          <div id="priorityList"></div>
+        </div>
+        <div class="card span4">
+          <h3>Répartition</h3>
+          <div id="distribution"></div>
+        </div>
+        <div class="card span12">
+          <h3>Lecture Meyden</h3>
+          <div class="notice">Le score n’est jamais une mesure de la valeur humaine. Il mesure uniquement la priorité relationnelle et stratégique actuelle selon les preuves disponibles.</div>
+        </div>
+      </div>
+    </section>
+
+    <section id="view-library" class="hidden">
+      <div class="card">
+        <div class="toolbar">
+          <input id="searchInput" class="input search" placeholder="Rechercher un nom, rôle, projet, catégorie..." oninput="renderLibrary()" />
+          <select id="filterPriority" class="select" style="width:auto" onchange="renderLibrary()">
+            <option value="">Toutes priorités</option><option>P1</option><option>P2</option><option>P3</option><option>P4</option><option>P5</option><option>P6</option>
+          </select>
+          <select id="filterCategory" class="select" style="width:auto" onchange="renderLibrary()">
+            <option value="">Toutes catégories</option>
+            <option>Art professionnel</option><option>Fan / audience</option><option>Partenaire / collaborateur</option><option>Connecteur</option><option>Institutionnel</option><option>À cartographier</option>
+          </select>
+          <select id="sortBy" class="select" style="width:auto" onchange="renderLibrary()">
+            <option value="score">Trier par priorité</option><option value="name">Trier par nom</option><option value="recent">Plus récents</option>
+          </select>
+        </div>
+        <div class="tablewrap">
+          <table>
+            <thead><tr><th>Nom</th><th>Catégorie</th><th>Arts pro</th><th>Fan</th><th>Lien Meyden</th><th>Score</th><th>Priorité</th><th>Confiance</th><th>Action</th></tr></thead>
+            <tbody id="libraryBody"></tbody>
+          </table>
+        </div>
+      </div>
+    </section>
+
+    <section id="view-import" class="hidden">
+      <div class="grid">
+        <div class="card span6">
+          <h3>Importer de nouvelles données</h3>
+          <p class="muted">Collez un texte, une liste de noms, des notes CRM ou un export. Le moteur détecte les noms et les signaux connus.</p>
+          <textarea id="importText" class="textarea" rows="16" placeholder="Exemple :
+Luc Gauthier — studio, production audio, partenaire Meyden, story vue
+Julie Exemple — fan, 3 stories vues, commentaire, billet acheté"></textarea>
+          <div class="actions" style="margin-top:12px">
+            <button class="btn primary" onclick="analyzeTextImport()">Analyser et prévisualiser</button>
+            <button class="btn" onclick="document.getElementById('fileInput').click()">Téléverser fichier</button>
+            <input id="fileInput" type="file" accept=".txt,.csv,.json" hidden onchange="handleFileImport(event)" />
+          </div>
+        </div>
+        <div class="card span6">
+          <h3>Prévisualisation</h3>
+          <div id="importPreview" class="muted">Aucune donnée analysée.</div>
+          <div class="actions" style="margin-top:12px">
+            <button id="confirmImportBtn" class="btn success hidden" onclick="confirmImport()">Ajouter à la bibliothèque</button>
+          </div>
+        </div>
+        <div class="card span12">
+          <h3>Ajout manuel précis</h3>
+          <div class="formgrid">
+            <div><label>Nom</label><input id="manualName" class="input" /></div>
+            <div><label>Catégorie principale</label><select id="manualCategory" class="select"><option>À cartographier</option><option>Art professionnel</option><option>Fan / audience</option><option>Partenaire / collaborateur</option><option>Connecteur</option><option>Institutionnel</option></select></div>
+            <div><label>Lien professionnel avec les arts</label><select id="manualArts" class="select"><option>Inconnu</option><option>Oui confirmé</option><option>Probable</option><option>Non confirmé</option></select></div>
+            <div><label>Fan / audience culturelle</label><select id="manualFan" class="select"><option>Inconnu</option><option>Confirmé</option><option>Probable</option><option>Audience observée</option></select></div>
+            <div><label>Lien Meyden</label><select id="manualMeyden" class="select"><option>Aucun confirmé</option><option>Faible</option><option>Moyen</option><option>Fort</option><option>Très fort</option></select></div>
+            <div><label>Niveau de confiance</label><select id="manualConfidence" class="select"><option>Faible</option><option>Moyen</option><option>Élevé</option><option>Très élevé</option></select></div>
+            <div class="full"><label>Notes / preuves / projets / interactions</label><textarea id="manualNotes" class="textarea" rows="5"></textarea></div>
+          </div>
+          <button class="btn primary" style="margin-top:12px" onclick="addManualContact()">Créer / mettre à jour la fiche</button>
+        </div>
+      </div>
+    </section>
+
+    <section id="view-rules" class="hidden">
+      <div class="grid">
+        <div class="card span6"><h3>7 axes de valorisation</h3><div id="rulesAxes"></div></div>
+        <div class="card span6"><h3>Formule</h3>
+          <pre>PRIORITÉ MEYDEN =
+Arts professionnel (0–25)
++ Lien direct Meyden (0–30)
++ Engagement naturel (0–20)
++ Affinité fan/culture (0–15)
++ Capacité de diffusion (0–20)
++ Centralité réseau (0–25)
++ Potentiel futur (0–25)
+
+Maximum = 160 points</pre>
+          <div class="notice">Le moteur ne doit jamais inventer un métier, une relation ou une intention d’achat. En cas de doute : “Inconnu / À vérifier”.</div>
+        </div>
+        <div class="card span12"><h3>Détection automatique actuelle</h3><p class="muted">Le moteur local analyse les mots-clés et les événements fournis. Il ne fait aucune recherche Internet autonome et ne fusionne jamais un homonyme sans preuve.</p><div id="keywordRules"></div></div>
+      </div>
+    </section>
+
+    <section id="view-backup" class="hidden">
+      <div class="grid">
+        <div class="card span6"><h3>Sauvegarde complète</h3><p class="muted">Exportez toute la bibliothèque, les scores, notes et événements.</p><button class="btn primary" onclick="exportDatabase()">Télécharger la sauvegarde JSON</button></div>
+        <div class="card span6"><h3>Restaurer</h3><p class="muted">Réimportez une sauvegarde JSON du MEYDEN NATURAL CRM.</p><button class="btn" onclick="document.getElementById('restoreInput').click()">Choisir une sauvegarde</button><input id="restoreInput" hidden type="file" accept=".json" onchange="restoreDatabase(event)" /></div>
+        <div class="card span12"><h3>Gestion</h3><button class="btn danger" onclick="resetDatabase()">Réinitialiser la base locale</button></div>
+      </div>
+    </section>
+
+    <section id="view-profile" class="hidden"></section>
+  </main>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/jspdf@2.5.1/dist/jspdf.umd.min.js"></script>
+<script>
+const STORAGE_KEY = 'meyden_natural_crm_v1';
+
+const seedNames = [
+"Raphael Cote","El Kevo","Blouin Lorraine","Tia Bergeron","Luc Gauthier","Jeff Lacasse","Haym Itcc","Joyce Ritter Ashton","David Primeau","Martin Houle","Mathieu Fréchette","Martin Lacombe","JuLy Lacroix","Manon Aubry","Steven Keays","Jace Roche","Stephane Chuck Dumont","Danny Bastien","Nicolas Seguin","Guy Léonard","Ced Chiefrocka Kool-aid","Nathalie Chiasson","Serge Saati","Daniel Delarosbil","Etienne Gasse","Alexandre Lachance","Naddijaa Dam","Jonathan Blanchette","Renaud LeDuc","Mathieu Rivard","Roger Cantin","Patrice Jolicoeur","Sam Carignan Bureau","Stephanie Stephanie","Marc-André Bastien","Jes Sica","Ronald Brunet","Timal Garnier","Vincent Delisle","Benoit Poulin","Michael Prud'homme","Jean-Guy Junior Carriere","Benoit Brien","Alexandre Marquis","Steven Nadeau","Marijo Abrigu","Keneth Walters","Matthieu Giguère","Frank Bolduc","Dave Morais","Jay Rémillard","Jonathan Hamelin","Luc Chalifoux le Fou","William Landry","Frank Barns","Rene Robitaille","Justin St","Mathieu St-Hilaire Lévesque","Luc Collerette","Andre Viau","Stéphanie Henri","Philippe Hudon","Jeff Cordeiro","Ya Ssine","Maxime Levesque","Maxime Boivin","Joe Goldberg","Jean Zimo-Rault","Charlie Carreiro","Bob Pop","Jean-Mathieu Touchette Viau","Dery Ju","Will Deslauriers","Steven Giroux","Peter ZG Fogarty","Mathieu La Vie Laurence","Jordi Légal-Ferrer","Patrick WhiteMan","Mélissa Filion","Stephane Page","Heidi Bourgeois","Martin Vigeant","Tommy To-ny Marceau","Marie-Claude Montreuil","Vincent Ouellet","Marc-Olivier Clement","Alex Princesse Laverdiere","Mac Tyler","Philippe Lauzon Perso","Marie Sunshine","Gaensly Dazulme","Jonathan Milter","Olivier Derkzen","Xavier Valois","Elgiad Nevek","Mathieu Roy-Lortie","L'étrange Et-blanc","Alex Beaudin","Robert Parent","Jessica Houle Hudon","Kevin Shelley","Monica Francoeur","Sarkis Aghbashian","Steeve Gagné","Jimmy Gérard","Maxime Paquin","Be XMaryyeexo","Rick Belanger","Ahmad Alhomsy","Cédric Bérubé","Joanie Roy","Corey Kaiser","Marc-andré Richard","Remi Thibault","Frederic Guilbault","Brian Broekaert","Zack Forsythe","Thomas Lapointe","Ronald Anderson","Bruno Bernier","Jean-francois Pelchat","Alexandre Dupras","Antoine Gareau","Philippe Festivi","Julien De Carufel","Musique Alto","LaVoute Sportive","Danny Lebourque","Max Turgy","Euguh Crust Core","David Boisvert","Faber Grenier","Izab Mitch","Guillaume Armstrong","Simon Leblanc","Cath Fortin","Jo Riendeau","Perron Pat","Alex Boudreault","Marc Latendresse","Luc Thibeault","Olivier Racette","Dave Desruisseaux","Vanessa Fournier","Martin Fournier","Carl Boudrias","Michel Marleau","Philippe T Bird Germain","Pierre-Étienne Drolet","Alyssia Guertin","Joe-anye Talbot","Matthew Sweeney","Nicolas Dumais Brouillette","Em Goyette","Mathieu Lemay","Charles-Emmanuel L'Espérance","Frédéric Kelly","Rémi Arsenault","Dominic Morin","Alexandre Pauzé","Pierre-luc Fortier","Vincent Dargis","Mick Chandia Fuentes TheBarber","Keven Boutin","Mathieu Plem","Francis Perron","Antoine Guertin","Nicolas Leroux","Mathieu Bastien","Ray Charles Milord","Louis Doyon","Franz Kaarle Poirier","Mark Urquhart","Alexis Barriere","Dalton Jonathan Boucher","Jérôme Fortin","Jeremy Rodriguez Carignan","Sylvie Lachapelle","Lestter Aldana","Patrick Labbé","Melissa Guay","Alexandre Carrier-Desjardins","Jason Thivierge","Dom Corbeil","Charles Côté","Éric Bedard","Oscar Souto","Philippe Landry","Maxime Leblanc","Jonathan Houle","Emmanuel Freitas","Max Lemire","Alexandre Lauzon","Frédérique Fortin","Marc-André Chartier","Martin Doomed Desbois","Jean-Francois Michaud","Julien de Kermadec","Julie Benoit","Dave Lambert Pagé","Frank Needle Hiro","Hugues Bouchard","Evans-Jésus Cheveudou","Mike Michael","Charles B. Pilotte"
+];
+
+const known = {
+  "Luc Gauthier": {category:"Partenaire / collaborateur", arts:"Oui confirmé", fan:"Probable", meyden:"Très fort", confidence:"Très élevé", notes:"Lujamko Studio; production audio; Symbioz 2.0; What You Made of Me; événement du 22 août 2026; contribution documentée.", axes:{arts:25,meyden:30,engagement:10,fan:10,diffusion:20,centrality:22,potential:20}},
+  "Manon Aubry": {category:"Partenaire / collaborateur", arts:"Probable", fan:"Probable", meyden:"Très fort", confidence:"Très élevé", notes:"Académie de coiffure de la Montérégie; partenaire de projet; présence dans l’écosystème Meyden.", axes:{arts:15,meyden:30,engagement:10,fan:8,diffusion:18,centrality:20,potential:25}},
+  "Tia Bergeron": {category:"Art professionnel", arts:"Oui confirmé", fan:"Probable", meyden:"Très fort", confidence:"Très élevé", notes:"Artiste en incubation Meyden N2; relation documentée.", axes:{arts:25,meyden:30,engagement:10,fan:10,diffusion:15,centrality:16,potential:23}},
+  "Nicolas Seguin": {category:"Art professionnel", arts:"Oui confirmé", fan:"Probable", meyden:"Très fort", confidence:"Très élevé", notes:"Captation / production documentée pour Symbioz 2.0.", axes:{arts:25,meyden:28,engagement:10,fan:8,diffusion:18,centrality:16,potential:23}},
+  "Mathieu Fréchette": {category:"Art professionnel", arts:"Oui confirmé", fan:"Confirmé", meyden:"Fort", confidence:"Très élevé", notes:"Membre documenté de Bury The Past; écosystème musical.", axes:{arts:25,meyden:25,engagement:10,fan:15,diffusion:15,centrality:18,potential:20}},
+  "Patrice Jolicoeur": {category:"Art professionnel", arts:"Oui confirmé", fan:"Confirmé", meyden:"Fort", confidence:"Très élevé", notes:"Membre documenté de Bury The Past; écosystème musical.", axes:{arts:25,meyden:25,engagement:10,fan:15,diffusion:15,centrality:18,potential:20}},
+  "Jonathan Blanchette": {category:"Institutionnel", arts:"Non confirmé", fan:"Audience observée", meyden:"Très fort", confidence:"Très élevé", notes:"Relation projet documentée; axe maisons containers / Union nationale / réflexion Québec.", axes:{arts:0,meyden:30,engagement:10,fan:5,diffusion:20,centrality:25,potential:25}},
+  "Bruno Bernier": {category:"Art professionnel", arts:"Oui confirmé", fan:"Confirmé", meyden:"Fort", confidence:"Très élevé", notes:"Écosystème Matante Mutante / incubation / projets Meyden documentés.", axes:{arts:25,meyden:25,engagement:10,fan:15,diffusion:15,centrality:14,potential:20}},
+  "El Kevo": {category:"Fan / audience", arts:"Inconnu", fan:"Probable", meyden:"Aucun confirmé", confidence:"Moyen", notes:"Vue de story documentée; réaction 👍 visible dans la capture.", axes:{arts:0,meyden:0,engagement:12,fan:8,diffusion:5,centrality:5,potential:15}}
+};
+
+const AXIS_LABELS = {
+  arts:"Lien professionnel avec les arts",
+  meyden:"Lien direct avec Meyden",
+  engagement:"Engagement naturel",
+  fan:"Affinité fan / culture",
+  diffusion:"Capacité de diffusion",
+  centrality:"Centralité réseau",
+  potential:"Potentiel futur"
+};
+const AXIS_MAX = {arts:25,meyden:30,engagement:20,fan:15,diffusion:20,centrality:25,potential:25};
+
+let db = loadDB();
+let importBuffer = [];
+
+function blankContact(name){
+  return {
+    id: crypto.randomUUID ? crypto.randomUUID() : String(Date.now()+Math.random()),
+    name, category:"À cartographier", arts:"Inconnu", fan:"Audience observée", meyden:"Aucun confirmé", confidence:"Moyen",
+    notes:"Vue de story documentée — 8 juillet 2026.", tags:["MEYDEN NATURAL","STORY VIEWER","FACEBOOK","SIGNAL COMPORTEMENTAL"],
+    axes:{arts:0,meyden:0,engagement:5,fan:3,diffusion:0,centrality:0,potential:6},
+    events:[{date:"2026-07-08",type:"Vue de story",source:"Facebook / Messenger",proof:"Capture d’écran"}],
+    createdAt:new Date().toISOString(), updatedAt:new Date().toISOString()
+  }
+}
+function initSeed(){
+  const contacts = seedNames.map(n=>{
+    let c=blankContact(n);
+    if(known[n]) c={...c,...known[n],axes:{...c.axes,...known[n].axes},tags:[...new Set([...(c.tags||[]),"DONNÉES CONNUES"])]};
+    return c;
+  });
+  return {version:1, contacts};
+}
+function loadDB(){
+  try{
+    const raw=localStorage.getItem(STORAGE_KEY);
+    if(raw) return JSON.parse(raw);
+  }catch(e){}
+  const fresh=initSeed(); localStorage.setItem(STORAGE_KEY,JSON.stringify(fresh)); return fresh;
+}
+function saveDB(){ localStorage.setItem(STORAGE_KEY,JSON.stringify(db)); renderDashboard(); }
+function score(c){ return Object.values(c.axes||{}).reduce((a,b)=>a+(Number(b)||0),0); }
+function priority(s){ if(s>=120)return"P1"; if(s>=90)return"P2"; if(s>=60)return"P3"; if(s>=35)return"P4"; if(s>=15)return"P5"; return"P6"; }
+function esc(s){return String(s??"").replace(/[&<>"']/g,m=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#039;"}[m]))}
+function showView(v){
+  document.querySelectorAll('main > section').forEach(s=>s.classList.add('hidden'));
+  document.getElementById('view-'+v).classList.remove('hidden');
+  document.querySelectorAll('.nav button').forEach(b=>b.classList.toggle('active',b.dataset.view===v));
+  const map={dashboard:["Tableau de bord","Cartographie vivante de l’écosystème Meyden."],library:["Bibliothèque","Classée par priorité, catégorie et nom."],import:["Nouvelles données","Téléversement, analyse et fusion sans perte."],rules:["Algorithme naturel","Règles, axes, preuves et prudence."],backup:["Sauvegarde","Exporter, restaurer et protéger la bibliothèque."]};
+  if(map[v]){viewTitle.textContent=map[v][0];viewSubtitle.textContent=map[v][1]}
+  if(v==="library")renderLibrary(); if(v==="rules")renderRules();
+}
+document.querySelectorAll('.nav button').forEach(b=>b.onclick=()=>showView(b.dataset.view));
+
+function renderDashboard(){
+  const cs=db.contacts||[];
+  statContacts.textContent=cs.length;
+  statArts.textContent=cs.filter(c=>c.arts==="Oui confirmé").length;
+  statFans.textContent=cs.filter(c=>["Confirmé","Probable","Audience observée"].includes(c.fan)).length;
+  statPriority.textContent=cs.filter(c=>["P1","P2"].includes(priority(score(c)))).length;
+  const top=[...cs].sort((a,b)=>score(b)-score(a)).slice(0,10);
+  priorityList.innerHTML=top.map(c=>`
+    <div class="kpi" style="padding:10px 0;border-bottom:1px solid var(--line)">
+      <div><strong>${esc(c.name)}</strong><div class="muted">${esc(c.category)} · ${esc(c.meyden)}</div></div>
+      <div style="text-align:right"><span class="badge ${priority(score(c)).toLowerCase()}">${priority(score(c))}</span><div>${score(c)}/160</div></div>
+    </div>`).join('');
+  const counts={P1:0,P2:0,P3:0,P4:0,P5:0,P6:0}; cs.forEach(c=>counts[priority(score(c))]++);
+  distribution.innerHTML=Object.entries(counts).map(([p,n])=>`
+    <div style="margin:13px 0"><div class="kpi"><span class="badge ${p.toLowerCase()}">${p}</span><b>${n}</b></div>
+    <div class="scorebar" style="width:100%"><i style="width:${cs.length?Math.round(n/cs.length*100):0}%"></i></div></div>`).join('');
+}
+function renderLibrary(){
+  const q=(searchInput.value||"").toLowerCase(), fp=filterPriority.value, fc=filterCategory.value, sort=sortBy.value;
+  let cs=(db.contacts||[]).filter(c=>{
+    const hay=[c.name,c.category,c.arts,c.fan,c.meyden,c.notes,(c.tags||[]).join(" ")].join(" ").toLowerCase();
+    return (!q||hay.includes(q)) && (!fp||priority(score(c))===fp) && (!fc||c.category===fc);
+  });
+  cs.sort((a,b)=>sort==="name"?a.name.localeCompare(b.name,"fr"):sort==="recent"?new Date(b.updatedAt)-new Date(a.updatedAt):score(b)-score(a));
+  libraryBody.innerHTML=cs.map(c=>{
+    const s=score(c),p=priority(s);
+    return `<tr>
+      <td><b>${esc(c.name)}</b><div class="muted">${esc((c.tags||[]).slice(0,2).join(" · "))}</div></td>
+      <td>${esc(c.category)}</td><td>${esc(c.arts)}</td><td>${esc(c.fan)}</td><td>${esc(c.meyden)}</td>
+      <td><b>${s}/160</b><div class="scorebar"><i style="width:${Math.min(100,s/160*100)}%"></i></div></td>
+      <td><span class="badge ${p.toLowerCase()}">${p}</span></td><td>${esc(c.confidence)}</td>
+      <td><button class="btn" onclick="openProfile('${c.id}')">Ouvrir</button></td>
+    </tr>`}).join('');
+}
+function renderRules(){
+  rulesAxes.innerHTML=Object.entries(AXIS_LABELS).map(([k,l])=>`<div class="kpi" style="padding:10px 0;border-bottom:1px solid var(--line)"><span>${l}</span><b>0–${AXIS_MAX[k]}</b></div>`).join('');
+  keywordRules.innerHTML=`<div class="chips">${["musicien","band","studio","production","artiste","photographe","vidéaste","radio","média","festival","spectacle","fan","billet","show","partage","commentaire","story","partenaire","Meyden","incubation","commanditaire","politique","institutionnel"].map(x=>`<span class="chip">${x}</span>`).join("")}</div>`;
+}
+function openProfile(id){
+  const c=db.contacts.find(x=>x.id===id); if(!c)return;
+  document.querySelectorAll('main > section').forEach(s=>s.classList.add('hidden'));
+  const v=document.getElementById('view-profile');v.classList.remove('hidden');
+  viewTitle.textContent="Fiche complète";viewSubtitle.textContent="Analyse, preuves, historique et export PDF.";
+  const s=score(c),p=priority(s);
+  v.innerHTML=`<div class="grid">
+    <div class="card span8">
+      <div class="profilehead"><div><h3>${esc(c.name)}</h3><p class="muted">${esc(c.category)}</p></div><div><span class="badge ${p.toLowerCase()}">${p}</span> <b>${s}/160</b></div></div>
+      <div class="chips">${(c.tags||[]).map(t=>`<span class="chip">${esc(t)}</span>`).join("")}</div>
+      <div class="axes">${Object.entries(AXIS_LABELS).map(([k,l])=>`<div class="axis">${l}<b>${c.axes[k]||0}/${AXIS_MAX[k]}</b><div class="scorebar" style="width:100%;margin-top:9px"><i style="width:${((c.axes[k]||0)/AXIS_MAX[k]*100)}%"></i></div></div>`).join("")}</div>
+      <h4>Notes et preuves</h4><p>${esc(c.notes||"Aucune note.")}</p>
+    </div>
+    <div class="card span4">
+      <h3>Classification</h3>
+      <p><b>Arts professionnel :</b><br>${esc(c.arts)}</p>
+      <p><b>Fan / audience :</b><br>${esc(c.fan)}</p>
+      <p><b>Lien Meyden :</b><br>${esc(c.meyden)}</p>
+      <p><b>Confiance :</b><br>${esc(c.confidence)}</p>
+      <div class="actions no-print"><button class="btn primary" onclick="downloadPDF('${c.id}')">Télécharger PDF</button><button class="btn" onclick="editProfile('${c.id}')">Modifier</button><button class="btn" onclick="showView('library')">Retour</button></div>
+    </div>
+    <div class="card span12"><h3>Historique</h3><div class="timeline">${(c.events||[]).map(e=>`<div class="event"><b>${esc(e.type)}</b><br><small>${esc(e.date)} · ${esc(e.source||"")} · ${esc(e.proof||"")}</small></div>`).join("")||'<span class="muted">Aucun événement.</span>'}</div></div>
+  </div>`;
+}
+function editProfile(id){
+  const c=db.contacts.find(x=>x.id===id); if(!c)return;
+  showView('import');
+  manualName.value=c.name;manualCategory.value=c.category;manualArts.value=c.arts;manualFan.value=c.fan;manualMeyden.value=c.meyden;manualConfidence.value=c.confidence;manualNotes.value=c.notes||"";
+}
+function inferFromText(name,text){
+  const t=text.toLowerCase(); let c=blankContact(name);
+  const has=(...xs)=>xs.some(x=>t.includes(x));
+  if(has("musicien","music","guitar","bass","drum","band","chanteur","chanteuse","artiste","studio","production audio","photographe","vidéaste","cinéma","radio","média")){
+    c.arts="Probable"; c.category="Art professionnel"; c.axes.arts=10; c.axes.potential=Math.max(c.axes.potential,15);
+  }
+  if(has("confirmé","professionnel","membre de","studio","producteur","réalisateur")){c.arts="Oui confirmé";c.axes.arts=25}
+  if(has("fan","spectateur","billet","show","concert")){c.fan="Probable";c.category=c.category==="À cartographier"?"Fan / audience":c.category;c.axes.fan=8}
+  if(has("fan confirmé","billet acheté","présence au show")){c.fan="Confirmé";c.axes.fan=15;c.axes.engagement=Math.max(c.axes.engagement,15)}
+  if(has("partenaire meyden","incubation meyden","collaborateur meyden","projet meyden")){c.meyden="Très fort";c.category="Partenaire / collaborateur";c.axes.meyden=30;c.axes.centrality=15}
+  else if(has("meyden")){c.meyden="Moyen";c.axes.meyden=15}
+  if(has("partage")){c.axes.engagement=Math.min(20,c.axes.engagement+10);c.axes.diffusion=Math.max(c.axes.diffusion,10)}
+  if(has("commentaire"))c.axes.engagement=Math.min(20,c.axes.engagement+7);
+  if(has("message privé","dm"))c.axes.engagement=Math.min(20,c.axes.engagement+10);
+  const storyCount=(t.match(/story/g)||[]).length; if(storyCount>1)c.axes.engagement=Math.min(20,c.axes.engagement+5);
+  if(has("radio","média","admin","communauté","influenceur"))c.axes.diffusion=20;
+  if(has("connecteur","réseau","connaît plusieurs","pont")){c.category="Connecteur";c.axes.centrality=20}
+  if(has("politique","institutionnel","municipal","gouvernement")){c.category="Institutionnel";c.axes.potential=25;c.axes.centrality=Math.max(c.axes.centrality,15)}
+  c.notes=text.trim(); c.updatedAt=new Date().toISOString();
+  return c;
+}
+function analyzeTextImport(){
+  const text=importText.value.trim(); if(!text){importPreview.innerHTML="Collez d’abord des données.";return}
+  const lines=text.split(/\n+/).map(x=>x.trim()).filter(Boolean);
+  importBuffer=[];
+  lines.forEach(line=>{
+    const parts=line.split(/\s+[—–-]\s+/);
+    let name=parts[0].trim(), rest=parts.slice(1).join(" — ");
+    if(name.length<2||name.length>100)return;
+    importBuffer.push(inferFromText(name,rest||line));
+  });
+  const unique=[]; const seen=new Set();
+  importBuffer.forEach(c=>{const k=c.name.toLowerCase();if(!seen.has(k)){seen.add(k);unique.push(c)}});
+  importBuffer=unique;
+  importPreview.innerHTML=`<b>${importBuffer.length} fiche(s) détectée(s)</b><div class="tablewrap" style="margin-top:10px"><table><thead><tr><th>Nom</th><th>Catégorie</th><th>Score</th><th>Priorité</th></tr></thead><tbody>${importBuffer.slice(0,100).map(c=>`<tr><td>${esc(c.name)}</td><td>${esc(c.category)}</td><td>${score(c)}/160</td><td>${priority(score(c))}</td></tr>`).join("")}</tbody></table></div>`;
+  confirmImportBtn.classList.remove('hidden');
+}
+function confirmImport(){
+  let added=0,updated=0;
+  importBuffer.forEach(nc=>{
+    const ex=db.contacts.find(c=>c.name.toLowerCase()===nc.name.toLowerCase());
+    if(ex){
+      ex.notes=[ex.notes,nc.notes].filter(Boolean).join("\n\n");
+      Object.keys(ex.axes).forEach(k=>ex.axes[k]=Math.max(ex.axes[k]||0,nc.axes[k]||0));
+      if(ex.arts==="Inconnu"&&nc.arts!=="Inconnu")ex.arts=nc.arts;
+      if(ex.fan==="Inconnu"&&nc.fan!=="Inconnu")ex.fan=nc.fan;
+      if(ex.meyden==="Aucun confirmé"&&nc.meyden!=="Aucun confirmé")ex.meyden=nc.meyden;
+      ex.updatedAt=new Date().toISOString(); updated++;
+    }else{db.contacts.push(nc);added++}
+  });
+  saveDB(); importPreview.innerHTML=`<b>Import terminé.</b><p>${added} nouvelle(s) fiche(s), ${updated} mise(s) à jour.</p>`;confirmImportBtn.classList.add('hidden');
+}
+function addManualContact(){
+  const name=manualName.value.trim();if(!name)return alert("Nom requis.");
+  let c=db.contacts.find(x=>x.name.toLowerCase()===name.toLowerCase());
+  if(!c){c=blankContact(name);db.contacts.push(c)}
+  c.category=manualCategory.value;c.arts=manualArts.value;c.fan=manualFan.value;c.meyden=manualMeyden.value;c.confidence=manualConfidence.value;c.notes=manualNotes.value.trim();
+  // recalcul prudent
+  c.axes.arts=c.arts==="Oui confirmé"?25:c.arts==="Probable"?10:0;
+  c.axes.meyden={"Aucun confirmé":0,"Faible":8,"Moyen":15,"Fort":25,"Très fort":30}[c.meyden]||0;
+  c.axes.fan={"Inconnu":0,"Audience observée":3,"Probable":8,"Confirmé":15}[c.fan]||0;
+  c.updatedAt=new Date().toISOString();saveDB();alert("Fiche enregistrée.");openProfile(c.id);
+}
+async function downloadPDF(id){
+  const c=db.contacts.find(x=>x.id===id);if(!c)return;
+  const s=score(c),p=priority(s);
+  if(window.jspdf&&window.jspdf.jsPDF){
+    const {jsPDF}=window.jspdf;const doc=new jsPDF({unit:"mm",format:"a4"});
+    const left=16;let y=18;
+    doc.setFont("helvetica","bold");doc.setFontSize(20);doc.text("MEYDEN NATURAL CRM",left,y);y+=8;
+    doc.setFontSize(13);doc.text("FICHE COMPLETE DE VALORISATION",left,y);y+=12;
+    doc.setFontSize(18);doc.text(c.name,left,y);y+=8;
+    doc.setFontSize(11);doc.setFont("helvetica","normal");
+    [["Categorie",c.category],["Priorite",p],["Score",s+"/160"],["Arts professionnel",c.arts],["Fan / audience",c.fan],["Lien Meyden",c.meyden],["Confiance",c.confidence]].forEach(([a,b])=>{doc.setFont("helvetica","bold");doc.text(a+" :",left,y);doc.setFont("helvetica","normal");doc.text(String(b),65,y);y+=7});
+    y+=4;doc.setFont("helvetica","bold");doc.text("Axes de valorisation",left,y);y+=7;doc.setFont("helvetica","normal");
+    Object.entries(AXIS_LABELS).forEach(([k,l])=>{doc.text(`${l}: ${c.axes[k]||0}/${AXIS_MAX[k]}`,left,y);y+=6});
+    y+=4;doc.setFont("helvetica","bold");doc.text("Notes et preuves",left,y);y+=7;doc.setFont("helvetica","normal");
+    const lines=doc.splitTextToSize(c.notes||"Aucune note.",178);doc.text(lines,left,y);y+=lines.length*5+6;
+    doc.setFont("helvetica","bold");doc.text("Historique",left,y);y+=7;doc.setFont("helvetica","normal");
+    (c.events||[]).forEach(e=>{const t=`${e.date} - ${e.type} - ${e.source||""} - ${e.proof||""}`;const ls=doc.splitTextToSize(t,178);doc.text(ls,left,y);y+=ls.length*5+2;if(y>275){doc.addPage();y=18}});
+    doc.setFontSize(8);doc.text("Document généré par MEYDEN NATURAL CRM. Le score mesure une priorité stratégique selon les preuves disponibles, jamais la valeur humaine.",left,290,{maxWidth:178});
+    doc.save(`MEYDEN_NATURAL_${c.name.replace(/[^\w\-]+/g,"_")}.pdf`);
+  }else{
+    alert("Le module PDF externe n'est pas disponible. La boîte d'impression va s'ouvrir : choisissez “Enregistrer au format PDF”.");window.print();
+  }
+}
+function exportDatabase(){
+  const blob=new Blob([JSON.stringify(db,null,2)],{type:"application/json"});const a=document.createElement("a");a.href=URL.createObjectURL(blob);a.download=`MEYDEN_NATURAL_CRM_${new Date().toISOString().slice(0,10)}.json`;a.click();URL.revokeObjectURL(a.href);
+}
+function restoreDatabase(e){
+  const f=e.target.files[0];if(!f)return;const r=new FileReader();r.onload=()=>{try{const x=JSON.parse(r.result);if(!x.contacts)throw 0;db=x;saveDB();alert("Sauvegarde restaurée.");showView('dashboard')}catch{alert("Fichier invalide.")}};r.readAsText(f);
+}
+function handleFileImport(e){
+  const f=e.target.files[0];if(!f)return;const r=new FileReader();r.onload=()=>{if(f.name.endsWith(".json")){try{const x=JSON.parse(r.result);importText.value=Array.isArray(x)?x.map(o=>`${o.name||o.nom||"Sans nom"} — ${JSON.stringify(o)}`).join("\n"):r.result}catch{importText.value=r.result}}else importText.value=r.result;analyzeTextImport()};r.readAsText(f);
+}
+function resetDatabase(){
+  if(confirm("Réinitialiser toute la base locale ? Cette action efface les modifications non sauvegardées.")){db=initSeed();saveDB();showView('dashboard')}
+}
+renderDashboard();renderRules();
+</script>
+</body>
+</html>
